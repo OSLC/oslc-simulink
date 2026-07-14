@@ -39,9 +39,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response.Status;
 
 import edu.gatech.mbsec.adapter.subversion.SubversionServiceProviderFactory;
 import org.eclipse.lyo.oslc4j.core.OSLC4JUtils;

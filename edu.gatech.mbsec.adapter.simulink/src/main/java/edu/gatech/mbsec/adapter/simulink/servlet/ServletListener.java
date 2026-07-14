@@ -14,11 +14,11 @@
  *******************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.servlet;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.eclipse.lyo.oslc4j.core.OSLC4JUtils;
 

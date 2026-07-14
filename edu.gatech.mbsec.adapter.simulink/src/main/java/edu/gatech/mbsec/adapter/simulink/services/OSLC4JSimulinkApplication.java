@@ -90,7 +90,7 @@ import util.FileMetadata;
  * 
  * @author Axel Reichwein (axel.reichwein@koneksys.com)
  */
-public class OSLC4JSimulinkApplication extends javax.ws.rs.core.Application {
+public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 
 	public static final Set<Class<?>> RESOURCE_CLASSES = new HashSet<Class<?>>();
 	public static final Map<String, Class<?>> RESOURCE_SHAPE_PATH_TO_RESOURCE_CLASS_MAP = new HashMap<String, Class<?>>();
