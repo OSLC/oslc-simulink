@@ -64,7 +64,6 @@ import org.eclipse.lyo.oslc4j.core.model.OslcConstants;
 
 import org.eclipse.lyo.oslc4j.provider.jena.JenaProvidersRegistry;
 import org.eclipse.lyo.oslc4j.provider.json4j.Json4JProvidersRegistry;
-import org.tmatesoft.svn.core.SVNURL;
 
 import com.opencsv.CSVReader;
 
