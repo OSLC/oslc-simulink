@@ -4,6 +4,10 @@
   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
   id="WebApp_ID" version="3.0">
   <display-name>OSLC Simulink Adapter</display-name>
+  <context-param>
+    <param-name>simulink.backend</param-name>
+    <param-value>xmi</param-value>
+  </context-param>
   <listener>
     <listener-class>edu.gatech.mbsec.adapter.simulink.servlet.ServletListener</listener-class>
   </listener>

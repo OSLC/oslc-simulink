@@ -17,6 +17,8 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.eclipse.lyo.oslc4j.core.OSLC4JUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -88,7 +90,7 @@ public class SimulinkParameterService {
 	@Context
 	private UriInfo uriInfo;
 
-	static String baseHTTPURI = "http://localhost:" + OSLC4JSimulinkApplication.portNumber + "/oslc4jsimulink";
+	static String baseHTTPURI = OSLC4JUtils.getPublicURI() != null ? OSLC4JUtils.getPublicURI() : ("http://localhost:" + OSLC4JSimulinkApplication.portNumber);
 
 	@OslcQueryCapability(title = "Simulink Parameter Query Capability", label = "Simulink Parameter Catalog Query", resourceShape = OslcConstants.PATH_RESOURCE_SHAPES
 			+ "/" + Constants.PATH_SIMULINK_PARAMETER, resourceTypes = { Constants.TYPE_SIMULINK_PARAMETER }, usages = { OslcConstants.OSLC_USAGE_DEFAULT })

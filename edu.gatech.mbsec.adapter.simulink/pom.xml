@@ -186,12 +186,6 @@
 							<httpConnector>
 								<port>8080</port>
 							</httpConnector>
-							<systemProperties>
-								<systemProperty>
-									<name>simulink.backend</name>
-									<value>xmi</value>
-								</systemProperty>
-							</systemProperties>
 							<stopPort>8091</stopPort>
 							<stopKey>STOP</stopKey>
 						</configuration>

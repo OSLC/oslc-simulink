@@ -63,7 +63,7 @@ public class OSLCWebClient4CreatingSimulinkElements {
 
 	public static void main(String[] args) {
 
-		String baseHTTPURI = "http://localhost:" + OSLC4JSimulinkApplication.portNumber + "/oslc4jsimulink";
+		String baseHTTPURI = "http://localhost:" + OSLC4JSimulinkApplication.portNumber;
 		String projectId = "model15";
 
 		// URI of the HTTP request

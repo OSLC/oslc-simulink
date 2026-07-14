@@ -18,6 +18,8 @@
 
 package edu.gatech.mbsec.adapter.simulink.application;
 
+import org.eclipse.lyo.oslc4j.core.OSLC4JUtils;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -120,7 +122,7 @@ public class SimulinkManager {
 
 	static StringBuffer buffer;
 
-	public static String baseHTTPURI = "http://localhost:" + OSLC4JSimulinkApplication.portNumber + "/oslc4jsimulink";
+	public static String baseHTTPURI = OSLC4JUtils.getPublicURI() != null ? OSLC4JUtils.getPublicURI() : ("http://localhost:" + OSLC4JSimulinkApplication.portNumber);
 	static String projectId;
 
 	public static void main(String[] args) {
