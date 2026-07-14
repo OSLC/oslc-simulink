@@ -66,6 +66,14 @@
 			<version>4.1.0</version>
 		</dependency>
 
+		<!-- OSLC client (non-deprecated; replaces the old oslc-java-client).
+		     Used by the standalone OSLCWebClient4* demo programs. -->
+		<dependency>
+			<groupId>org.eclipse.lyo.clients</groupId>
+			<artifactId>oslc-client</artifactId>
+			<version>4.1.0</version>
+		</dependency>
+
 		<!-- JAX-RS 2.0 runtime (Jersey) — replaces Apache Wink, removed in Lyo 4.x -->
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
@@ -121,14 +129,6 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
-					<!-- Standalone Wink-based demo clients (OSLCWebClient4*) use the
-					     removed OslcRestClient/BasicAuthSecurityHandler and cannot be
-					     built against the Jersey 4.x stack; excluded from the server
-					     build until migrated to oslc-client (later Lyo version). -->
-					<excludes>
-						<exclude>edu/gatech/mbsec/adapter/simulink/clients/OSLCWebClient4CreatingSimulinkModel.java</exclude>
-						<exclude>edu/gatech/mbsec/adapter/simulink/clients/OSLCWebClient4CreatingSimulinkElements.java</exclude>
-					</excludes>
 				</configuration>
 			</plugin>
 
