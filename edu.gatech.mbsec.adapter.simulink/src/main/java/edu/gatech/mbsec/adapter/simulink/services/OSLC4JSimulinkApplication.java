@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.xerces.util.URI;
 import edu.gatech.mbsec.adapter.simulink.resources.Constants;
 import edu.gatech.mbsec.adapter.simulink.resources.SimulinkBlock;
 import edu.gatech.mbsec.adapter.simulink.resources.SimulinkElementsToCreate;
@@ -57,8 +56,6 @@ import edu.gatech.mbsec.adapter.simulink.resources.SimulinkParameter;
 import edu.gatech.mbsec.adapter.subversion.SubversionFile;
 import edu.gatech.mbsec.adapter.subversion.SubversionFileService;
 import edu.gatech.mbsec.adapter.subversion.SubversionManager;
-import org.eclipse.lyo.oslc4j.application.OslcResourceShapeResource;
-import org.eclipse.lyo.oslc4j.application.OslcWinkApplication;
 import org.eclipse.lyo.oslc4j.core.exception.OslcCoreApplicationException;
 import org.eclipse.lyo.oslc4j.core.model.OslcConstants;
 
@@ -93,7 +90,7 @@ import util.FileMetadata;
  * 
  * @author Axel Reichwein (axel.reichwein@koneksys.com)
  */
-public class OSLC4JSimulinkApplication extends OslcWinkApplication {
+public class OSLC4JSimulinkApplication extends javax.ws.rs.core.Application {
 
 	public static final Set<Class<?>> RESOURCE_CLASSES = new HashSet<Class<?>>();
 	public static final Map<String, Class<?>> RESOURCE_SHAPE_PATH_TO_RESOURCE_CLASS_MAP = new HashMap<String, Class<?>>();
@@ -143,8 +140,6 @@ public class OSLC4JSimulinkApplication extends OslcWinkApplication {
 		RESOURCE_CLASSES.add(SimulinkSVNFileURLService.class);
 		
 
-		RESOURCE_CLASSES.add(OslcResourceShapeResource.class);
-		
 		RESOURCE_CLASSES.add(ResourceShapeService.class);
 		RESOURCE_CLASSES.add(RDFVocabularyService.class);
 
@@ -156,6 +151,9 @@ public class OSLC4JSimulinkApplication extends OslcWinkApplication {
 		RESOURCE_SHAPE_PATH_TO_RESOURCE_CLASS_MAP.put(Constants.PATH_SIMULINK_PARAMETER, SimulinkParameter.class);
 
 		loadPropertiesFile();
+		if (portNumber == null) {
+			portNumber = "8080";
+		}
 
 		readDataFirstTime();
 
@@ -163,8 +161,12 @@ public class OSLC4JSimulinkApplication extends OslcWinkApplication {
 
 	}
 
-	public OSLC4JSimulinkApplication() throws OslcCoreApplicationException, URISyntaxException {
-		super(RESOURCE_CLASSES, OslcConstants.PATH_RESOURCE_SHAPES, RESOURCE_SHAPE_PATH_TO_RESOURCE_CLASS_MAP);
+	public OSLC4JSimulinkApplication() {
+	}
+
+	@Override
+	public Set<Class<?>> getClasses() {
+		return RESOURCE_CLASSES;
 	}
 
 	private static void loadPropertiesFile() {

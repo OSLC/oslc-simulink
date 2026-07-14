@@ -29,13 +29,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>jsr311-api</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-
-
-		<dependency>
 			<groupId>edu.gatech.mbsec.adapter.simulink</groupId>
 			<artifactId>ecore-simulink</artifactId>
 			<version>1.1.0</version>
@@ -53,29 +46,41 @@
 
 		<dependency>
 			<groupId>org.eclipse.lyo.oslc4j.core</groupId>
-			<artifactId>oslc4j-wink</artifactId>
-			<version>2.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.lyo.oslc4j.core</groupId>
 			<artifactId>oslc4j-jena-provider</artifactId>
-			<version>2.2.0</version>
+			<version>4.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.lyo.oslc4j.core</groupId>
 			<artifactId>oslc4j-core</artifactId>
-			<version>2.2.0</version>
+			<version>4.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.lyo.core.query</groupId>
 			<artifactId>oslc-query</artifactId>
-			<version>2.2.0</version>
+			<version>4.1.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.eclipse.lyo.oslc4j.core</groupId>
 			<artifactId>oslc4j-json4j-provider</artifactId>
-			<version>2.2.0</version>
+			<version>4.1.0</version>
+		</dependency>
+
+		<!-- JAX-RS 2.0 runtime (Jersey) — replaces Apache Wink, removed in Lyo 4.x -->
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>2.35</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet</artifactId>
+			<version>2.35</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>2.35</version>
 		</dependency>
 
 
@@ -91,9 +96,23 @@
 			<version>3.4</version>
 		</dependency>
 
+		<dependency>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>4.5.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.10.2</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
+		<finalName>oslc4jsimulink</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -102,6 +121,14 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<!-- Standalone Wink-based demo clients (OSLCWebClient4*) use the
+					     removed OslcRestClient/BasicAuthSecurityHandler and cannot be
+					     built against the Jersey 4.x stack; excluded from the server
+					     build until migrated to oslc-client (later Lyo version). -->
+					<excludes>
+						<exclude>edu/gatech/mbsec/adapter/simulink/clients/OSLCWebClient4CreatingSimulinkModel.java</exclude>
+						<exclude>edu/gatech/mbsec/adapter/simulink/clients/OSLCWebClient4CreatingSimulinkElements.java</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 
@@ -145,5 +172,58 @@
 			<releases><enabled>false</enabled></releases>
 		</repository>
 	</repositories>
+
+	<profiles>
+		<profile>
+			<id>acceptance</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.jetty.ee8</groupId>
+						<artifactId>jetty-ee8-maven-plugin</artifactId>
+						<version>12.1.11</version>
+						<configuration>
+							<httpConnector>
+								<port>8080</port>
+							</httpConnector>
+							<systemProperties>
+								<systemProperty>
+									<name>simulink.backend</name>
+									<value>xmi</value>
+								</systemProperty>
+							</systemProperties>
+							<stopPort>8091</stopPort>
+							<stopKey>STOP</stopKey>
+						</configuration>
+						<executions>
+							<execution>
+								<id>start-jetty</id>
+								<phase>pre-integration-test</phase>
+								<goals><goal>start</goal></goals>
+							</execution>
+							<execution>
+								<id>stop-jetty</id>
+								<phase>post-integration-test</phase>
+								<goals><goal>stop</goal></goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>3.5.2</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

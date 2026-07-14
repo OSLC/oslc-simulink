@@ -101,6 +101,23 @@ public class SimulinkManager {
 
 	public static WorkingDirectory simulinkWorkingDirectory = null;
 
+	/**
+	 * Backend used to obtain the Simulink {@link WorkingDirectory}. Selected via
+	 * the {@code simulink.backend} system property: {@code matlab} (default,
+	 * runs MATLAB) or {@code xmi} (loads a pre-generated XMI fixture, no
+	 * matlab.exe -- used for tests and MATLAB-less environments).
+	 */
+	private static SimulationModelBackend backend;
+
+	static {
+		final String type = System.getProperty("simulink.backend", "matlab");
+		if ("xmi".equalsIgnoreCase(type)) {
+			backend = new XmiFileSimulationModelBackend();
+		} else {
+			backend = new MatlabSimulationModelBackend();
+		}
+	}
+
 	static StringBuffer buffer;
 
 	public static String baseHTTPURI = "http://localhost:" + OSLC4JSimulinkApplication.portNumber + "/oslc4jsimulink";
@@ -154,14 +171,12 @@ public class SimulinkManager {
 				//System.out.println("OSLC Adapter <-> Simulink Interaction in " + (duration) + " milli seconds");
 
 				try{
-					// load Simulink XMI file
-					Resource ecoreResource = loadEcoreModel(org.eclipse.emf.common.util.URI.createFileURI(
-							new File(OSLC4JSimulinkApplication.simulinkModelsDirectory + "/simulinkWorkDir.xmi")
-									.getAbsolutePath()));
-
-					// load Simulink working directory
-					simulinkWorkingDirectory = (WorkingDirectory) EcoreUtil.getObjectByType(ecoreResource.getContents(),
-							SimulinkPackage.eINSTANCE.getWorkingDirectory());
+					// Load the Simulink working directory through the configured backend
+					// (MATLAB by default; an XMI fixture for tests / MATLAB-less runs).
+					simulinkWorkingDirectory = backend.loadWorkingDirectory();
+					if (simulinkWorkingDirectory == null) {
+						return;
+					}
 
 					for (Model model : simulinkWorkingDirectory.getModel()) {
 						//System.out.println("MODEL " + model.getName());
@@ -350,6 +365,17 @@ public class SimulinkManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Loads a Simulink working directory from an XMI file (used by both the
+	 * MATLAB and the XMI-file backends).
+	 */
+	public static WorkingDirectory loadWorkingDirectoryFromXmi(final File xmiFile) throws Exception {
+		final Resource ecoreResource = loadEcoreModel(
+				org.eclipse.emf.common.util.URI.createFileURI(xmiFile.getAbsolutePath()));
+		return (WorkingDirectory) EcoreUtil.getObjectByType(ecoreResource.getContents(),
+				SimulinkPackage.eINSTANCE.getWorkingDirectory());
 	}
 
 	private static Resource loadEcoreModel(org.eclipse.emf.common.util.URI fileURI) {

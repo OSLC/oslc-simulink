@@ -44,7 +44,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import edu.gatech.mbsec.adapter.subversion.SubversionServiceProviderFactory;
-import org.eclipse.lyo.oslc4j.client.ServiceProviderRegistryURIs;
+import org.eclipse.lyo.oslc4j.core.OSLC4JUtils;
 import org.eclipse.lyo.oslc4j.core.exception.OslcCoreApplicationException;
 import org.eclipse.lyo.oslc4j.core.model.Publisher;
 import org.eclipse.lyo.oslc4j.core.model.Service;
@@ -80,7 +80,7 @@ public class ServiceProviderCatalogSingleton {
 		try {
 			serviceProviderCatalog = new ServiceProviderCatalog();
 
-			serviceProviderCatalog.setAbout(new URI(ServiceProviderRegistryURIs.getServiceProviderRegistryURI()));
+			serviceProviderCatalog.setAbout(new URI(OSLC4JUtils.getPublicURI()));
 			serviceProviderCatalog.setTitle("OSLC Service Provider Catalog");
 			serviceProviderCatalog.setDescription("OSLC Service Provider Catalog");
 			serviceProviderCatalog
