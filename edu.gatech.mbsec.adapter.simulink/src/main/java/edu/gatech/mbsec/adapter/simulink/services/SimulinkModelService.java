@@ -94,18 +94,6 @@ public class SimulinkModelService {
 		return simulinkModel;
 	}
 	
-	@GET	
-	@Produces({ OslcMediaType.APPLICATION_RDF_XML,
-			OslcMediaType.APPLICATION_JSON })
-	public edu.gatech.mbsec.adapter.simulink.resources.SimulinkModel getModel(
-			@PathParam("modelName") final String modelName)
-			throws URISyntaxException {
-		SimulinkManager.loadSimulinkWorkingDirectory();
-		SimulinkModel simulinkModel = SimulinkManager
-				.getModelByName(modelName);
-		return simulinkModel;
-	}
-	
 	@GET
     @Produces(MediaType.TEXT_HTML)
     public void getHtmlModel(@PathParam("modelName") final String modelName)

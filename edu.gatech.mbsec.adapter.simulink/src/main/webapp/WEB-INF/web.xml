@@ -14,13 +14,6 @@
       <param-name>javax.ws.rs.Application</param-name>
       <param-value>edu.gatech.mbsec.adapter.simulink.services.OSLC4JSimulinkApplication</param-value>
     </init-param>
-    <!-- Jersey 2.x enforces strict resource-model validation that Wink did not;
-         legacy SimulinkModelService has overlapping getModel() @Path mappings.
-         Ignore validation errors so the app starts as it did under Wink. -->
-    <init-param>
-      <param-name>jersey.config.server.resource.validation.ignoreErrors</param-name>
-      <param-value>true</param-value>
-    </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
