@@ -161,18 +161,20 @@ public class SimulinkManager {
 				qNameOslcSimulinkParameterMap.clear();
 
 				// run matlab script
-				long startTime = System.currentTimeMillis();
-				Simulink2XMIThread2 simulink2XMIThread = new Simulink2XMIThread2();
-				simulink2XMIThread.start();
-				try {
-					simulink2XMIThread.join();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if (backend instanceof MatlabImpl) {
+					long startTime = System.currentTimeMillis();
+					Simulink2XMIThread2 simulink2XMIThread = new Simulink2XMIThread2();
+					simulink2XMIThread.start();
+					try {
+						simulink2XMIThread.join();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					long endTime = System.currentTimeMillis();
+					long duration = endTime - startTime;
+					//System.out.println("OSLC Adapter <-> Simulink Interaction in " + (duration) + " milli seconds");
 				}
-				long endTime = System.currentTimeMillis();
-				long duration = endTime - startTime;
-				//System.out.println("OSLC Adapter <-> Simulink Interaction in " + (duration) + " milli seconds");
 
 				try{
 					// Load the Simulink working directory through the configured backend

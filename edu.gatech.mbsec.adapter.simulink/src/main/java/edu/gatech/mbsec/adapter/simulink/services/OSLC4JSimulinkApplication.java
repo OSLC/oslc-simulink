@@ -131,11 +131,6 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 		RESOURCE_CLASSES.add(SimulinkOutputPortService.class);
 		RESOURCE_CLASSES.add(SimulinkLineService.class);
 		RESOURCE_CLASSES.add(SimulinkParameterService.class);
-		RESOURCE_CLASSES.add(SimulinkBlock.class);
-		RESOURCE_CLASSES.add(SimulinkLine.class);
-		RESOURCE_CLASSES.add(SimulinkParameter.class);
-		RESOURCE_CLASSES.add(SimulinkElementsToCreate.class);
-		RESOURCE_CLASSES.add(SubversionFile.class);
 		RESOURCE_CLASSES.add(SubversionFileService.class);
 		RESOURCE_CLASSES.add(SimulinkSVNFileURLService.class);
 		

@@ -233,7 +233,7 @@ public class ServiceProviderCatalogSingleton {
 			List<String> modelNames = new ArrayList<String>();
 
 			SimulinkManager.loadSimulinkWorkingDirectory();
-			String basePath = OSLC4JUtils.getPublicURI() != null ? OSLC4JUtils.getPublicURI() : ("http://localhost:" + OSLC4JSimulinkApplication.portNumber) + "/services";
+			String basePath = OSLC4JUtils.getPublicURI() != null ? (OSLC4JUtils.getPublicURI() + "/services") : ("http://localhost:" + OSLC4JSimulinkApplication.portNumber) + "/services";
 
 			// as individual subversion files can get chosen to to be published by adapter, the initial set of files to be published can be empty
 			// in that case, simulinkWorkingDirectory = null
