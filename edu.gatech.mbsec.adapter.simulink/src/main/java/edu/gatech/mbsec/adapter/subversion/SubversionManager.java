@@ -1,10 +1,13 @@
 package edu.gatech.mbsec.adapter.subversion;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import clients.SubversionClient;
 import util.FileMetadata;
 
 /**
@@ -48,6 +51,10 @@ public class SubversionManager {
 	}
 
 	public Collection<SubversionFile> getSubversionFiles() {
+		if (qNameOslcSubversionFileMap.isEmpty()) {
+			convertFileMetaDataIntoRDFSubversionFileResources(
+					SubversionClient.syncWorkingCopy(null, null, null, null));
+		}
 		return qNameOslcSubversionFileMap.values();
 	}
 
@@ -56,6 +63,30 @@ public class SubversionManager {
 	}
 
 	public void convertFileMetaDataIntoRDFSubversionFileResources(ArrayList<FileMetadata> fileMetaDatas) {
-		// no-op stub
+		if (fileMetaDatas == null) {
+			return;
+		}
+		for (FileMetadata fm : fileMetaDatas) {
+			if (fm == null) {
+				continue;
+			}
+			try {
+				final SubversionFile sf = new SubversionFile();
+				final String key = fm.getSvnURL();
+				if (key != null && !key.isEmpty()) {
+					sf.setAbout(new URI(key));
+				}
+				sf.setName(fm.getPath());
+				sf.setPath(fm.getPath());
+				sf.setAuthor(fm.getAuthor());
+				sf.setCommittedDate(fm.getCommittedDate());
+				sf.setRepositoryRootURL(fm.getRepositoryRootURL());
+				sf.setRevision(fm.getRevision());
+				sf.setSvnURL(fm.getSvnURL());
+				qNameOslcSubversionFileMap.put(key, sf);
+			} catch (final URISyntaxException e) {
+				// skip entries whose svnURL is not a valid URI
+			}
+		}
 	}
 }

@@ -5,11 +5,15 @@ import java.util.ArrayList;
 import util.FileMetadata;
 
 /**
- * NO-OP STUB of the Subversion working-copy synchronizer, shaded locally so the
- * Simulink adapter compiles without the external {@code svnkit-client} module.
+ * Stub of the Subversion working-copy synchronizer.
+ *
+ * <p>The real implementation depends on the external {@code svnkit-client}
+ * module, which is not bundled. This stub instead serves sample working-copy
+ * metadata loaded from a configurable location (see {@link SvnSampleData}), so
+ * the Simulink adapter runs standalone without a Subversion server.</p>
  */
 public class SubversionClient {
 	public static ArrayList<FileMetadata> syncWorkingCopy(String svnurl, String localDir, String user, String password) {
-		return new ArrayList<FileMetadata>();
+		return new ArrayList<FileMetadata>(SvnSampleData.loadWorkingCopy());
 	}
 }
