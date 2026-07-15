@@ -12,7 +12,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.lyo>7.0.0-Alpha.10</version.lyo>
+		<version.lyo>7.0.0.Alpha12</version.lyo>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
@@ -36,18 +36,15 @@
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
-			<version>6.1.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.servlet.jsp.jstl</groupId>
 			<artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-			<version>3.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.web</groupId>
 			<artifactId>jakarta.servlet.jsp.jstl</artifactId>
-			<version>3.0.1</version>
 		</dependency>
 
 		<!-- Internal sibling modules -->
@@ -71,46 +68,38 @@
 		<dependency>
 			<groupId>org.eclipse.lyo.oslc4j.core</groupId>
 			<artifactId>oslc4j-jena-provider</artifactId>
-			<version>${version.lyo}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.lyo.oslc4j.core</groupId>
 			<artifactId>oslc4j-core</artifactId>
-			<version>${version.lyo}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.lyo.core.query</groupId>
 			<artifactId>oslc-query</artifactId>
-			<version>${version.lyo}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.lyo.oslc4j.core</groupId>
 			<artifactId>oslc4j-json4j-provider</artifactId>
-			<version>${version.lyo}</version>
 		</dependency>
 		<!-- OSLC client (non-deprecated; replaces the old oslc-java-client).
 		     Used by the standalone OSLCWebClient4* demo programs. -->
 		<dependency>
 			<groupId>org.eclipse.lyo.clients</groupId>
 			<artifactId>oslc-client</artifactId>
-			<version>${version.lyo}</version>
 		</dependency>
 
 		<!-- JAX-RS 3.0 runtime (Jersey, jakarta namespace) -->
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-server</artifactId>
-			<version>3.1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet</artifactId>
-			<version>3.1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.inject</groupId>
 			<artifactId>jersey-hk2</artifactId>
-			<version>3.1.5</version>
 		</dependency>
 
 		<dependency>

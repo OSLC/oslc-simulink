@@ -7,7 +7,21 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<version.lyo>7.0.0.Alpha12</version.lyo>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Eclipse Lyo 7 BOM: pins all Lyo-covered dependency versions. -->
+			<dependency>
+				<groupId>org.eclipse.lyo</groupId>
+				<artifactId>lyo-bom</artifactId>
+				<version>${version.lyo}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -31,7 +45,6 @@
 		<dependency>
 			<groupId>org.eclipse.lyo.oslc4j.core</groupId>
 			<artifactId>oslc4j-core</artifactId>
-			<version>7.0.0-Alpha.10</version>
 		</dependency>
 
 	</dependencies>
