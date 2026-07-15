@@ -142,6 +142,34 @@
 					<target>17</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.eclipse.jetty.ee10</groupId>
+				<artifactId>jetty-ee10-maven-plugin</artifactId>
+				<version>12.0.16</version>
+				<configuration>
+					<webApp>
+						<contextPath>/</contextPath>
+					</webApp>
+					<httpConnector>
+						<port>8080</port>
+					</httpConnector>
+					<scan>0</scan>
+					<stopPort>8091</stopPort>
+					<stopKey>STOP</stopKey>
+				</configuration>
+				<executions>
+					<execution>
+						<id>start-jetty</id>
+						<phase>pre-integration-test</phase>
+						<goals><goal>start</goal></goals>
+					</execution>
+					<execution>
+						<id>stop-jetty</id>
+						<phase>post-integration-test</phase>
+						<goals><goal>stop</goal></goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -162,35 +190,22 @@
 	<profiles>
 		<profile>
 			<id>acceptance</id>
+			<dependencies>
+				<dependency>
+					<groupId>io.rest-assured</groupId>
+					<artifactId>rest-assured</artifactId>
+					<version>6.0.1</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.junit.jupiter</groupId>
+					<artifactId>junit-jupiter</artifactId>
+					<version>5.10.2</version>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
 			<build>
 				<plugins>
-					<plugin>
-						<groupId>org.eclipse.jetty.ee10</groupId>
-						<artifactId>jetty-ee10-maven-plugin</artifactId>
-						<version>12.0.16</version>
-						<configuration>
-							<webApp>
-								<contextPath>/</contextPath>
-							</webApp>
-							<httpConnector>
-								<port>8080</port>
-							</httpConnector>
-							<stopPort>8091</stopPort>
-							<stopKey>STOP</stopKey>
-						</configuration>
-						<executions>
-							<execution>
-								<id>start-jetty</id>
-								<phase>pre-integration-test</phase>
-								<goals><goal>start</goal></goals>
-							</execution>
-							<execution>
-								<id>stop-jetty</id>
-								<phase>post-integration-test</phase>
-								<goals><goal>stop</goal></goals>
-							</execution>
-						</executions>
-					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-failsafe-plugin</artifactId>
