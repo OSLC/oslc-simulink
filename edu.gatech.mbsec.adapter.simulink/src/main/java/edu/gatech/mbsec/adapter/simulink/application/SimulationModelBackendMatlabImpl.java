@@ -10,8 +10,10 @@ import edu.gatech.mbsec.adapter.simulink.services.OSLC4JSimulinkApplication;
 /**
  * Production backend: runs MATLAB (via {@link Simulink2XMIThread2}) to convert
  * the Simulink working directory into {@code simulinkWorkDir.xmi} and loads it.
+ * Selected via the {@code simulink.backend=matlab} configuration flag; requires
+ * a MATLAB installation, so it is opt-in rather than the default.
  */
-public class MatlabSimulationModelBackend implements SimulationModelBackend {
+public class SimulationModelBackendMatlabImpl implements SimulationModelBackend {
 
 	@Override
 	public WorkingDirectory loadWorkingDirectory() throws Exception {

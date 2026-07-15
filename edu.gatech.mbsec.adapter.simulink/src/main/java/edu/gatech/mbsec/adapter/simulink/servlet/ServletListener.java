@@ -49,14 +49,18 @@ public class ServletListener implements ServletContextListener {
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         final ServletContext servletContext = servletContextEvent.getServletContext();
 
-        // Select the Simulink backend (matlab | xmi) before any OSLC resource
+        // Select the Simulink backend (xmi | matlab) before any OSLC resource
         // references SimulinkManager, whose static initializer reads this
         // system property. Resolved via the standard precedence
-        // (system property -> context param -> env -> default).
+        // (system property -> context param -> env -> default). The standalone
+        // XMI backend is the default so the server runs without MATLAB.
         final String backend =
-                getConfigurationProperty("simulink.backend", "matlab", servletContext);
+                getConfigurationProperty("simulink.backend", "xmi", servletContext);
         System.setProperty("simulink.backend", backend);
-        LOG.info("Simulink backend: " + backend);
+        LOG.info("Using SimulationModelBackend implementation: "
+                + ("xmi".equalsIgnoreCase(backend)
+                        ? "SimulationModelBackendStandaloneImpl (XMI fixture from classpath, no MATLAB required)"
+                        : "SimulationModelBackendMatlabImpl (requires MATLAB)"));
 
         final String basePathProperty =
                 getConfigurationProperty(BASE_URL_KEY, FALLBACK_BASE, servletContext);

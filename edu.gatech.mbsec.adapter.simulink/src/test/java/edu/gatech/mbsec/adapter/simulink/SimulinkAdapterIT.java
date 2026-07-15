@@ -33,10 +33,10 @@ import java.util.Set;
  * </pre>
  *
  * <p>The adapter is populated from a Simulink XMI fixture ({@code simulinkWorkDir.xmi})
- * loaded by {@code XmiFileSimulationModelBackend} (selected via
- * {@code -Dsimulink.backend=xmi}), so no MATLAB is required. The assertions verify
- * that the RDF returned by the resources actually corresponds to the XMI fixture
- * data (model names, contained blocks, etc.).
+ * loaded by {@code SimulationModelBackendStandaloneImpl} — the default backend
+ * (also selectable explicitly via {@code -Dsimulink.backend=xmi}), so no MATLAB is
+ * required. The assertions verify that the RDF returned by the resources actually
+ * corresponds to the XMI fixture data (model names, contained blocks, etc.).
  */
 public class SimulinkAdapterIT {
 

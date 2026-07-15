@@ -105,18 +105,20 @@ public class SimulinkManager {
 
 	/**
 	 * Backend used to obtain the Simulink {@link WorkingDirectory}. Selected via
-	 * the {@code simulink.backend} system property: {@code matlab} (default,
-	 * runs MATLAB) or {@code xmi} (loads a pre-generated XMI fixture, no
-	 * matlab.exe -- used for tests and MATLAB-less environments).
+	 * the {@code simulink.backend} configuration flag: {@code xmi} (default,
+	 * loads the pre-generated XMI fixture packaged under {@code src/main/resources},
+	 * no matlab.exe -- used for tests and MATLAB-less environments) or
+	 * {@code matlab} (runs MATLAB). The standalone XMI backend is the default so
+	 * the OSLC server starts without an external MATLAB installation.
 	 */
 	private static SimulationModelBackend backend;
 
 	static {
-		final String type = System.getProperty("simulink.backend", "matlab");
+		final String type = System.getProperty("simulink.backend", "xmi");
 		if ("xmi".equalsIgnoreCase(type)) {
-			backend = new XmiFileSimulationModelBackend();
+			backend = new SimulationModelBackendStandaloneImpl();
 		} else {
-			backend = new MatlabSimulationModelBackend();
+			backend = new SimulationModelBackendMatlabImpl();
 		}
 	}
 
