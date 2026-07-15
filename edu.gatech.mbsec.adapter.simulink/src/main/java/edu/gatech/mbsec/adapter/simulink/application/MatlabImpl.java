@@ -13,7 +13,7 @@ import edu.gatech.mbsec.adapter.simulink.services.OSLC4JSimulinkApplication;
  * Selected via the {@code simulink.backend=matlab} configuration flag; requires
  * a MATLAB installation, so it is opt-in rather than the default.
  */
-public class SimulationModelBackendMatlabImpl implements SimulationModelBackend {
+public class MatlabImpl implements SimulationModelBackend {
 
 	@Override
 	public WorkingDirectory loadWorkingDirectory() throws Exception {

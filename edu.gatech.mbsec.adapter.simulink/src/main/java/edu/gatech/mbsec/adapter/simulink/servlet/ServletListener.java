@@ -60,7 +60,7 @@ public class ServletListener implements ServletContextListener {
         LOG.info("Using SimulationModelBackend implementation: "
                 + ("xmi".equalsIgnoreCase(backend)
                         ? "SimulationModelBackendStandaloneImpl (XMI fixture from classpath, no MATLAB required)"
-                        : "SimulationModelBackendMatlabImpl (requires MATLAB)"));
+                        : "MatlabImpl (requires MATLAB)"));
 
         final String basePathProperty =
                 getConfigurationProperty(BASE_URL_KEY, FALLBACK_BASE, servletContext);

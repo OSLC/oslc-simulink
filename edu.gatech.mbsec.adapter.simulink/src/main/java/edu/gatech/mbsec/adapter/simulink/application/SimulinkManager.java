@@ -118,7 +118,7 @@ public class SimulinkManager {
 		if ("xmi".equalsIgnoreCase(type)) {
 			backend = new SimulationModelBackendStandaloneImpl();
 		} else {
-			backend = new SimulationModelBackendMatlabImpl();
+			backend = new MatlabImpl();
 		}
 	}
 
