@@ -17,6 +17,9 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -89,6 +92,8 @@ import util.FileMetadata;
 @Path("svnfilepublisher")
 public class SimulinkSVNFileURLService {
 
+	private static final Logger LOG = LoggerFactory.getLogger(SimulinkSVNFileURLService.class);
+
 	@Context
 	private HttpServletRequest httpServletRequest;
 	@Context
@@ -116,11 +121,9 @@ public class SimulinkSVNFileURLService {
 			httpServletRequest.setAttribute("svnurls", svnurls);
 
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			LOG.error("Unhandled exception", e1);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 		}
 
 		// httpServletRequest.setAttribute("modelName", modelName);
@@ -134,7 +137,7 @@ public class SimulinkSVNFileURLService {
 		try {
 			rd.forward(httpServletRequest, httpServletResponse);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 			throw new WebApplicationException(e);
 		}
 
@@ -154,7 +157,7 @@ public class SimulinkSVNFileURLService {
 			
 			// make sure that url is not a duplicate							
 			if (!svnurls.contains(svnurl)) {
-				System.out.println(svnurl);
+				LOG.debug("Added a Subversion URL");
 				svnurls.add(svnurl);
 
 				// write to file
@@ -170,7 +173,7 @@ public class SimulinkSVNFileURLService {
 			}
 							
 		} catch (Exception e) {
-
+			LOG.trace("Ignoring an invalid or unusable Subversion URL submitted by the user", e);
 		}
 		
 		
@@ -182,7 +185,7 @@ public class SimulinkSVNFileURLService {
 			httpServletResponse.sendRedirect(svnfileSelectorURI);
 			return Response.seeOther(new URI(svnfileSelectorURI)).build();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 			throw new WebApplicationException(e);
 		}
 	}
@@ -220,7 +223,7 @@ public class SimulinkSVNFileURLService {
 			httpServletResponse.sendRedirect(svnfileSelectorURI);
 			return Response.seeOther(new URI(svnfileSelectorURI)).build();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 			throw new WebApplicationException(e);
 		}
 	}
@@ -254,7 +257,7 @@ public class SimulinkSVNFileURLService {
 			httpServletResponse.sendRedirect(svnfileSelectorURI);
 			return Response.seeOther(new URI(svnfileSelectorURI)).build();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 			throw new WebApplicationException(e);
 		}
 	}
@@ -271,7 +274,7 @@ public class SimulinkSVNFileURLService {
 			httpServletResponse.sendRedirect(svnfileSelectorURI);
 			return Response.seeOther(new URI(svnfileSelectorURI)).build();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 			throw new WebApplicationException(e);
 		}
 	}
@@ -279,8 +282,8 @@ public class SimulinkSVNFileURLService {
 	@HEAD	
 	@Path("republish")
 	public void getEventFromRepository(String svnRepoURL) {
-		System.out.println("subversion commit event");
-		System.out.println(svnRepoURL);
+		LOG.info("subversion commit event");
+		LOG.info(svnRepoURL);
 		
 		
 		OSLC4JSimulinkApplication.reloadSimulinkModels();

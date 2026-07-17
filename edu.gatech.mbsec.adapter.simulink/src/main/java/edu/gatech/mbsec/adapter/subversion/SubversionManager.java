@@ -1,5 +1,8 @@
 package edu.gatech.mbsec.adapter.subversion;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -7,16 +10,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import clients.SubversionClient;
+import clients.SubversionService;
 import util.FileMetadata;
 
 /**
- * NO-OP STUB of the Subversion backend, shaded locally so the Simulink adapter
- * compiles without the external {@code oslc4jsubversion}/{@code svnkit-client}
- * modules. The real Subversion integration is intended to be reimplemented
- * behind a backend interface (e.g. backed by git) in a later milestone.
+ * Converts backend-neutral Subversion metadata into OSLC resources.
  */
 public class SubversionManager {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SubversionManager.class);
 
 	static Map<String, SubversionManager> subversionManagerMap = new HashMap<String, SubversionManager>();
 
@@ -24,9 +26,15 @@ public class SubversionManager {
 
 	private Map<String, SubversionFile> qNameOslcSubversionFileMap = new HashMap<String, SubversionFile>();
 	private String baseHTTPURI;
+	private final SubversionService subversionService;
 
 	public SubversionManager(String baseHTTPURI) {
+		this(baseHTTPURI, null);
+	}
+
+	public SubversionManager(String baseHTTPURI, SubversionService subversionService) {
 		this.baseHTTPURI = baseHTTPURI;
+		this.subversionService = subversionService;
 		instance = this;
 		if (baseHTTPURI.contains("magicdraw")) {
 			subversionManagerMap.put("magicdraw", this);
@@ -51,9 +59,13 @@ public class SubversionManager {
 	}
 
 	public Collection<SubversionFile> getSubversionFiles() {
-		if (qNameOslcSubversionFileMap.isEmpty()) {
-			convertFileMetaDataIntoRDFSubversionFileResources(
-					SubversionClient.syncWorkingCopy(null, null, null, null));
+		if (qNameOslcSubversionFileMap.isEmpty() && subversionService != null) {
+			try {
+				convertFileMetaDataIntoRDFSubversionFileResources(
+						new ArrayList<>(subversionService.syncWorkingCopy(null, null, null, null)));
+			} catch (Exception exception) {
+				throw new IllegalStateException("Could not load Subversion metadata", exception);
+			}
 		}
 		return qNameOslcSubversionFileMap.values();
 	}
@@ -86,6 +98,8 @@ public class SubversionManager {
 				qNameOslcSubversionFileMap.put(key, sf);
 			} catch (final URISyntaxException e) {
 				// skip entries whose svnURL is not a valid URI
+				LOG.trace(
+						"Skipping Subversion metadata with an invalid svnURL", e);
 			}
 		}
 	}

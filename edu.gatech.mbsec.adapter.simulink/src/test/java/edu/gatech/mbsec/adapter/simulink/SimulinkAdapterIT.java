@@ -44,7 +44,7 @@ public class SimulinkAdapterIT {
 
 	// RDF predicates as declared by the OSLC resource classes
 	// (edu.gatech.mbsec.adapter.simulink.resources.*).
-	private static final String RDF_VOCAB = "http://localhost:8181/oslc4jsimulink/services/rdfvocabulary#";
+	private static final String RDF_VOCAB = "http://example.com/ns/oslc_simulink#";
 	private static final Property MODEL_NAME = prop(RDF_VOCAB + "Model_name");
 	private static final Property MODEL_BLOCK = prop(RDF_VOCAB + "Model_block");
 	private static final Property BLOCK_NAME = prop(RDF_VOCAB + "Block_name");
@@ -71,6 +71,8 @@ public class SimulinkAdapterIT {
 	@Test
 	void catalogPublishesXmiModels() {
 		final Model catalog = getRdf("/services/catalog/singleton");
+		assertTrue(catalog.containsResource(catalog.createResource(BASE + "/services/catalog/singleton")),
+				"catalog about URI must identify the catalog endpoint");
 
 		final Set<String> ids = new HashSet<>();
 		final StmtIterator sps = catalog.listStatements(null, RDF.type, SERVICE_PROVIDER);
@@ -143,6 +145,21 @@ public class SimulinkAdapterIT {
 		assertEquals("engine", modelRes.getProperty(MODEL_NAME).getString());
 		assertEquals(1, countProperties(modelRes, MODEL_BLOCK),
 				"engine RDF should reference exactly 1 block (Pulse)");
+	}
+
+	@Test
+	void vocabularyUsesConfiguredAbsoluteUri() {
+		final String vocabulary = given()
+				.accept("application/rdf+xml")
+				.when()
+				.get("/services/rdfvocabulary")
+				.then()
+				.statusCode(200)
+				.extract()
+				.body()
+				.asString();
+		assertTrue(vocabulary.contains(RDF_VOCAB));
+		assertFalse(vocabulary.contains("localhost:8181"));
 	}
 
 	// ------------------------------------------------------------------------

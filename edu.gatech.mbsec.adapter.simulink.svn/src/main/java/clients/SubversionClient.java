@@ -12,8 +12,10 @@ import util.FileMetadata;
  * metadata loaded from a configurable location (see {@link SvnSampleData}), so
  * the Simulink adapter runs standalone without a Subversion server.</p>
  */
+@Deprecated
 public class SubversionClient {
 	public static ArrayList<FileMetadata> syncWorkingCopy(String svnurl, String localDir, String user, String password) {
-		return new ArrayList<FileMetadata>(SvnSampleData.loadWorkingCopy());
+		return new ArrayList<FileMetadata>(new SubversionServiceStandaloneImpl()
+				.syncWorkingCopy(svnurl, localDir, user, password));
 	}
 }

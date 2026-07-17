@@ -4,6 +4,24 @@
 
 ## Overview of RESTful web services 
 
+## Migration build modes
+
+The default build is standalone and does not require MATLAB or SVNKit. It loads the packaged XMI fixture and sample SVN data, so the server can be run and integration-tested on any supported development platform.
+
+```text
+mvn -f edu.gatech.mbsec.adapter.simulink.resources/pom.xml clean install -DskipTests
+mvn -f edu.gatech.mbsec.adapter.simulink/pom.xml -Pacceptance clean verify
+```
+
+The optional `full` profile packages the MATLAB scripts and SVNKit-backed implementation. Build and install the SVN module with that profile first, then package the server:
+
+```text
+mvn -f edu.gatech.mbsec.adapter.simulink.svn/pom.xml -Pfull clean install -DskipTests
+mvn -f edu.gatech.mbsec.adapter.simulink/pom.xml -Pfull clean package -DskipTests
+```
+
+The implementation is selected with `simulation.backend=matlab` and `subversion.client.impl=svnkit`; standalone remains the default.
+
 | Simulink Concept  	| GET	| POST	| PUT	| 	DELETE	|
 | ------------- 	| ------|-------|----	|------		|
 | Block  		| X  	| X 	|  	| 		|
@@ -353,4 +371,3 @@ URL: http://localhost:8181/oslc4jsimulink/services/resourceShapes
 
 #### Testing the retrieval of Simulink RDF vocabulary hosted by the Simulink adapter in HTML and RDF
 URL: http://localhost:8181/oslc4jsimulink/services/rdfvocabulary
-

@@ -17,6 +17,9 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.clients;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractSequentialList;
@@ -59,6 +62,8 @@ import edu.gatech.mbsec.adapter.simulink.services.OSLC4JSimulinkApplication;
  * @author Axel Reichwein (axel.reichwein@koneksys.com)
  */
 public class OSLCWebClient4CreatingSimulinkElements {
+
+	private static final Logger LOG = LoggerFactory.getLogger(OSLCWebClient4CreatingSimulinkElements.class);
 
 
 	public static void main(String[] args) {
@@ -649,8 +654,7 @@ public class OSLCWebClient4CreatingSimulinkElements {
 			// .addOslcResource(subsystem2SumOut1Line);
 
 		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 		}
 
 	}

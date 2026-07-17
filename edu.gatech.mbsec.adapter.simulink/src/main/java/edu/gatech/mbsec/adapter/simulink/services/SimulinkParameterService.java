@@ -17,6 +17,9 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.eclipse.lyo.oslc4j.core.OSLC4JUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -82,6 +85,8 @@ import edu.gatech.mbsec.adapter.simulink.application.SimulinkManager;
 @OslcService(Constants.SIMULINK_PARAMETER_DOMAIN)
 @Path("{modelName}/parameters")
 public class SimulinkParameterService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SimulinkParameterService.class);
 
 	@Context
 	private HttpServletRequest httpServletRequest;
@@ -172,7 +177,7 @@ public class SimulinkParameterService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -194,7 +199,7 @@ public class SimulinkParameterService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -212,8 +217,8 @@ public class SimulinkParameterService {
 			final SimulinkParameter simulinkParameter) throws IOException,
 			ServletException {
 		// String ifMatchHeader = httpServletRequest.getHeader("If-Match");
-		System.out.println(simulinkParameter.getName());
-		SimulinkManager.createSimulinkParameter(simulinkParameter, modelName);
+		LOG.info(simulinkParameter.getName());
+		SimulinkManager.getBackend().createParameter(simulinkParameter, modelName);
 		URI about = simulinkParameter.getAbout();
 		return Response.created(about).entity(simulinkParameter).build();
 	}
@@ -241,7 +246,7 @@ public class SimulinkParameterService {
 		}
 		// update simulinkParameter
 		simulinkElementToUpdate.setValue(simulinkParameter.getValue());
-		SimulinkManager.createSimulinkParameter(simulinkElementToUpdate, modelName);
+		SimulinkManager.getBackend().createParameter(simulinkElementToUpdate, modelName);
 		builder = Response.ok();
 		EntityTag updatedETag = new EntityTag(md5Java(simulinkElementToUpdate));
 		return builder.tag(updatedETag).build();
@@ -300,8 +305,7 @@ public class SimulinkParameterService {
 //		} catch (NoSuchAlgorithmException ex) {
 //		}
 //		catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
+//			LOG.trace("Could not serialize a Simulink parameter while calculating its ETag", e);
 //		}
 //		return digest;
 //	}
@@ -319,11 +323,9 @@ public class SimulinkParameterService {
 			}
 			digest = sb.toString();
 		} catch (UnsupportedEncodingException ex) {
+			LOG.error("UTF-8 encoding is unavailable while calculating a Simulink parameter ETag", ex);
 		} catch (NoSuchAlgorithmException ex) {
-		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("MD5 is unavailable while calculating a Simulink parameter ETag", ex);
 		}
 		return digest;
 	}

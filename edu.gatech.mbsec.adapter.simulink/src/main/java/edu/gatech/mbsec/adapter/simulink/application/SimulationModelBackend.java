@@ -1,5 +1,10 @@
 package edu.gatech.mbsec.adapter.simulink.application;
 
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkBlock;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkElementsToCreate;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkLine;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkParameter;
+
 import simulink.WorkingDirectory;
 
 /**
@@ -21,4 +26,12 @@ public interface SimulationModelBackend {
 	 * @throws Exception if loading fails
 	 */
 	WorkingDirectory loadWorkingDirectory() throws Exception;
+
+	void createBlock(SimulinkBlock block, String modelName);
+
+	void createParameter(SimulinkParameter parameter, String modelName);
+
+	void createLine(SimulinkLine line, String modelName);
+
+	void createElements(SimulinkElementsToCreate elements, String modelName);
 }

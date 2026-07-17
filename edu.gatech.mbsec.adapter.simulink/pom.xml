@@ -32,6 +32,18 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<!-- Console-only logging for local runs and container stdout/stderr capture. -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.17</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.5.26</version>
+		</dependency>
+
 		<!-- Servlet / JSP APIs (jakarta namespace, Jakarta EE 10) -->
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
@@ -212,6 +224,57 @@
 								</goals>
 							</execution>
 						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>full</id>
+			<properties>
+				<simulink.backend>matlab</simulink.backend>
+				<subversion.client.impl>subversion</subversion.client.impl>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>org.tmatesoft.svnkit</groupId>
+					<artifactId>svnkit</artifactId>
+					<version>1.10.11</version>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<version>3.4.0</version>
+						<configuration>
+							<webResources>
+								<resource>
+									<directory>matlab</directory>
+									<targetPath>matlab</targetPath>
+								</resource>
+								<resource>
+									<directory>simulinkmodels</directory>
+									<targetPath>simulinkmodels</targetPath>
+								</resource>
+							</webResources>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.eclipse.jetty.ee10</groupId>
+						<artifactId>jetty-ee10-maven-plugin</artifactId>
+						<configuration>
+							<systemProperties>
+								<systemProperty>
+									<name>simulink.backend</name>
+									<value>matlab</value>
+								</systemProperty>
+								<systemProperty>
+									<name>subversion.client.impl</name>
+									<value>subversion</value>
+								</systemProperty>
+							</systemProperties>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>

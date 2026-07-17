@@ -5,6 +5,10 @@ import java.io.File;
 import simulink.WorkingDirectory;
 
 import edu.gatech.mbsec.adapter.simulink.matlab.Simulink2XMIThread2;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkBlock;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkElementsToCreate;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkLine;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkParameter;
 import edu.gatech.mbsec.adapter.simulink.services.OSLC4JSimulinkApplication;
 
 /**
@@ -22,5 +26,25 @@ public class MatlabImpl implements SimulationModelBackend {
 		thread.join();
 		final File xmi = new File(OSLC4JSimulinkApplication.simulinkModelsDirectory + "/simulinkWorkDir.xmi");
 		return SimulinkManager.loadWorkingDirectoryFromXmi(xmi);
+	}
+
+	@Override
+	public void createBlock(final SimulinkBlock block, final String modelName) {
+		SimulinkManager.createSimulinkBlock(block, modelName);
+	}
+
+	@Override
+	public void createParameter(final SimulinkParameter parameter, final String modelName) {
+		SimulinkManager.createSimulinkParameter(parameter, modelName);
+	}
+
+	@Override
+	public void createLine(final SimulinkLine line, final String modelName) {
+		SimulinkManager.createSimulinkLine(line, modelName);
+	}
+
+	@Override
+	public void createElements(final SimulinkElementsToCreate elements, final String modelName) {
+		SimulinkManager.createSimulinkElements(elements, modelName);
 	}
 }

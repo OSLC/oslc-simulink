@@ -17,6 +17,9 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -69,6 +72,8 @@ import edu.gatech.mbsec.adapter.simulink.application.SimulinkManager;
 @OslcService(Constants.SIMULINK_LINE_DOMAIN)
 @Path("{modelName}/lines")
 public class SimulinkLineService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SimulinkLineService.class);
 	
 	@Context
 	private HttpServletRequest httpServletRequest;
@@ -131,7 +136,7 @@ public class SimulinkLineService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -152,7 +157,7 @@ public class SimulinkLineService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -167,7 +172,7 @@ public class SimulinkLineService {
 			OslcMediaType.APPLICATION_XML, OslcMediaType.APPLICATION_JSON })
 	public Response addLine(@PathParam("modelName") final String modelName,
 			final SimulinkLine simulinkLine) throws IOException, ServletException {				
-		SimulinkManager.createSimulinkLine(simulinkLine, modelName);
+		SimulinkManager.getBackend().createLine(simulinkLine, modelName);
 		URI about = simulinkLine.getAbout();
 		return Response.created(about).entity(simulinkLine).build();
 	}

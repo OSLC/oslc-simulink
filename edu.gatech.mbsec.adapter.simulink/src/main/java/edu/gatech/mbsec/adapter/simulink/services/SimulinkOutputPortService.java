@@ -17,6 +17,9 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -63,6 +66,8 @@ import edu.gatech.mbsec.adapter.simulink.application.SimulinkManager;
 @OslcService(Constants.SIMULINK_OUTPUTPORT_DOMAIN)
 @Path("{modelName}/outputports")
 public class SimulinkOutputPortService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SimulinkOutputPortService.class);
 	
 	@Context
 	private HttpServletRequest httpServletRequest;
@@ -126,7 +131,7 @@ public class SimulinkOutputPortService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -147,7 +152,7 @@ public class SimulinkOutputPortService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}

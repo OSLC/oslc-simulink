@@ -17,6 +17,9 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -68,6 +71,8 @@ import edu.gatech.mbsec.adapter.simulink.serviceproviders.ServiceProviderCatalog
 @Path(OslcConstants.PATH_RESOURCE_SHAPES)
 public class ResourceShapeService {
 
+	private static final Logger LOG = LoggerFactory.getLogger(ResourceShapeService.class);
+
 	@Context
 	private HttpServletRequest httpServletRequest;
 	@Context
@@ -97,7 +102,7 @@ public class ResourceShapeService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -133,7 +138,7 @@ public class ResourceShapeService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -156,11 +161,9 @@ public class ResourceShapeService {
 				resourceShape = ResourceShapeFactory.createResourceShape(baseURI, OslcConstants.PATH_RESOURCE_SHAPES,
 						resourceShapePath, resourceClass);
 			} catch (OslcCoreApplicationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 			}
 			if (resourceShape != null) {
 				resourceShapes.add(resourceShape);
@@ -187,11 +190,9 @@ public class ResourceShapeService {
 				resourceShape = ResourceShapeFactory.createResourceShape(baseURI,
 						OslcConstants.PATH_RESOURCE_SHAPES, resourceShapePath, resourceClass);
 			} catch (OslcCoreApplicationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 			}
 		}
 

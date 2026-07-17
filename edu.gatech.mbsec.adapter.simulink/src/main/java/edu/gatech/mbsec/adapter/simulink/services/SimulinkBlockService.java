@@ -17,6 +17,9 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -71,6 +74,8 @@ import edu.gatech.mbsec.adapter.simulink.application.SimulinkManager;
 @OslcService(Constants.SIMULINK_BLOCK_DOMAIN)
 @Path("{modelName}/blocks")
 public class SimulinkBlockService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SimulinkBlockService.class);
 	
 	@Context
 	private HttpServletRequest httpServletRequest;
@@ -147,7 +152,7 @@ public class SimulinkBlockService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -168,7 +173,7 @@ public class SimulinkBlockService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -183,8 +188,8 @@ public class SimulinkBlockService {
 			OslcMediaType.APPLICATION_XML, OslcMediaType.APPLICATION_JSON })
 	public Response addBlock(@PathParam("modelName") final String modelName,
 			final SimulinkBlock simulinkBlock) throws IOException, ServletException {
-		System.out.println(simulinkBlock.getName());		
-		SimulinkManager.createSimulinkBlock(simulinkBlock, modelName);
+		LOG.info(simulinkBlock.getName());		
+		SimulinkManager.getBackend().createBlock(simulinkBlock, modelName);
 		URI about = simulinkBlock.getAbout();
 		return Response.created(about).entity(simulinkBlock).build();
 	}

@@ -22,6 +22,9 @@
  *******************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.io.IOException;
 import java.net.URI;
@@ -72,7 +75,9 @@ import edu.gatech.mbsec.adapter.simulink.serviceproviders.ServiceProviderCatalog
 @OslcService(OslcConstants.OSLC_CORE_DOMAIN)
 @Path("catalog")
 public class ServiceProviderCatalogService
-{
+		{
+
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceProviderCatalogService.class);
 	@Context private HttpServletRequest httpServletRequest;
 	@Context private HttpServletResponse httpServletResponse;
 	@Context private UriInfo uriInfo;
@@ -185,7 +190,7 @@ public class ServiceProviderCatalogService
     		try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {				
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			} 
     	}

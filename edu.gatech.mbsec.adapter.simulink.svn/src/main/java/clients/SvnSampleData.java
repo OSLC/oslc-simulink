@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import util.FileMetadata;
 
@@ -21,7 +23,7 @@ import util.FileMetadata;
  */
 public final class SvnSampleData {
 
-    private static final Logger LOG = Logger.getLogger(SvnSampleData.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(SvnSampleData.class);
 
     private SvnSampleData() {
     }
@@ -41,7 +43,7 @@ public final class SvnSampleData {
             fm.setSvnURL(props.getProperty("svn.file." + i + ".svnURL", ""));
             files.add(fm);
         }
-        LOG.info("Loaded " + files.size() + " sample SVN file metadata entry(ies) from " + location);
+        LOG.info("Loaded {} sample SVN file metadata entry(ies) from {}", files.size(), location);
         return files;
     }
 
@@ -56,17 +58,18 @@ public final class SvnSampleData {
             props.load(in);
             return props;
         } catch (final IOException fileException) {
+            LOG.trace("Could not load sample SVN properties from file {}", location, fileException);
             try (InputStream in = SvnSampleData.class.getResourceAsStream("/" + location)) {
                 if (in == null) {
-                    LOG.warning("Sample SVN properties not found at '" + location
-                            + "' (neither as a file nor as a classpath resource); serving empty working copy");
+                    LOG.warn("Sample SVN properties not found at '{}' (neither as a file nor as a classpath resource); serving empty working copy",
+                            location);
                     return props;
                 }
                 props.load(in);
                 return props;
             } catch (final IOException classpathException) {
-                LOG.warning("Could not load sample SVN properties from " + location
-                        + "; serving empty working copy");
+                LOG.error("Could not load sample SVN properties from {}", location, classpathException);
+                LOG.warn("Could not load sample SVN properties from {}; serving empty working copy", location);
                 return props;
             }
         }

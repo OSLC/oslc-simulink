@@ -18,6 +18,9 @@
  *******************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,6 +48,9 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import edu.gatech.mbsec.adapter.simulink.resources.Constants;
 import edu.gatech.mbsec.adapter.simulink.resources.SimulinkBlock;
 import edu.gatech.mbsec.adapter.simulink.resources.SimulinkElementsToCreate;
@@ -64,8 +70,8 @@ import org.eclipse.lyo.oslc4j.provider.json4j.Json4JProvidersRegistry;
 
 import com.opencsv.CSVReader;
 
-import clients.SubversionClient;
-import clients.SubversionFileClient;
+import clients.SubversionService;
+import clients.SubversionServiceFactory;
 import edu.gatech.mbsec.adapter.simulink.application.SimulinkManager;
 import edu.gatech.mbsec.adapter.simulink.services.ServiceProviderCatalogService;
 import edu.gatech.mbsec.adapter.simulink.services.ServiceProviderService;
@@ -92,18 +98,21 @@ import util.FileMetadata;
  */
 public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 
+	private static final Logger LOG = LoggerFactory.getLogger(OSLC4JSimulinkApplication.class);
+
 	public static final Set<Class<?>> RESOURCE_CLASSES = new HashSet<Class<?>>();
 	public static final Map<String, Class<?>> RESOURCE_SHAPE_PATH_TO_RESOURCE_CLASS_MAP = new HashMap<String, Class<?>>();
 
 	public static String simulinkEcoreLocation = null;
 	public static String simulinkModelsDirectory = null;
+	public static String matlabScriptsDirectory = null;
 	public static String portNumber = null;
 	public static boolean syncWithSvnRepo = false;
 	public static String svnurl = null;
 	public static int delayInSecondsBetweenDataRefresh = 100000;
 	public static boolean useIndividualSubversionFiles = false;
 	public static SubversionManager subversionManager = null;
-	public static SubversionFileClient subversionFileClient;
+	public static final SubversionService subversionService = SubversionServiceFactory.create();
 	public static String svnUserName;
 	public static String svnPassword;
 
@@ -168,6 +177,27 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 		Properties prop = new Properties();
 		InputStream input = null;
 
+		// These defaults keep the standalone WAR independent of a workstation
+		// configuration file. External configuration overrides them below.
+		simulinkEcoreLocation = configuredProperty(prop, "simulinkEcoreLocation", "");
+		simulinkModelsDirectory = configuredProperty(prop, "simulinkModelsDirectory", "simulinkmodels/");
+		matlabScriptsDirectory = configuredProperty(prop, "matlabScriptsDirectory", "matlab/");
+		portNumber = configuredProperty(prop, "portNumber", "8080");
+		svnUserName = configuredProperty(prop, "svnUserName", "");
+		svnPassword = configuredProperty(prop, "svnPassword", "");
+		svnurl = configuredProperty(prop, "svnurl", "");
+		syncWithSvnRepo = Boolean.parseBoolean(configuredProperty(prop, "syncWithSvnRepo", "false"));
+		useIndividualSubversionFiles = Boolean.parseBoolean(
+				configuredProperty(prop, "useIndividualSubversionFiles", "false"));
+		try {
+			delayInSecondsBetweenDataRefresh = Integer.parseInt(
+					configuredProperty(prop, "delayInSecondsBetweenDataRefresh", "100000"));
+		} catch (NumberFormatException ignored) {
+			// Keep the safe default for legacy values such as "none".
+			LOG.trace(
+				"Invalid delayInSecondsBetweenDataRefresh value; using the safe default", ignored);
+		}
+
 		try {
 			// loading properties file
 			// input = new FileInputStream("./configuration/config.properties");
@@ -178,8 +208,7 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 				input = new FileInputStream(localConfigFilePath);
 				configFilePath = localConfigFilePath;
 			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				LOG.error("Unhandled exception", e1);
 			} // for war file
 		}
 
@@ -192,27 +221,30 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 				prop.load(new StringReader(str.replace("\\", "/")));
 
 				// get the property value
-				String simulinkEcoreLocationFromUser = prop.getProperty("simulinkEcoreLocation");
-				String simulinkModelsDirectoryFromUser = prop.getProperty("simulinkModelsDirectory");
-				String syncWithSvnRepoFromUser = prop.getProperty("syncWithSvnRepo");
-				String delayInSecondsBetweenDataRefreshFromUser = prop.getProperty("delayInSecondsBetweenDataRefresh");
-				String useIndividualSubversionFilesFromUser = prop.getProperty("useIndividualSubversionFiles");
+				String simulinkEcoreLocationFromUser = configuredProperty(prop, "simulinkEcoreLocation", simulinkEcoreLocation);
+				String simulinkModelsDirectoryFromUser = configuredProperty(prop, "simulinkModelsDirectory", simulinkModelsDirectory);
+				String matlabScriptsDirectoryFromUser = configuredProperty(prop, "matlabScriptsDirectory", matlabScriptsDirectory);
+				String syncWithSvnRepoFromUser = configuredProperty(prop, "syncWithSvnRepo", Boolean.toString(syncWithSvnRepo));
+				String delayInSecondsBetweenDataRefreshFromUser = configuredProperty(prop, "delayInSecondsBetweenDataRefresh", Integer.toString(delayInSecondsBetweenDataRefresh));
+				String useIndividualSubversionFilesFromUser = configuredProperty(prop, "useIndividualSubversionFiles", Boolean.toString(useIndividualSubversionFiles));
 
 				// add trailing slash if missing
 				if (!simulinkModelsDirectoryFromUser.endsWith("/")) {
 					simulinkModelsDirectoryFromUser = simulinkModelsDirectoryFromUser + "/";
 				}
 				simulinkModelsDirectory = simulinkModelsDirectoryFromUser;
+				matlabScriptsDirectory = matlabScriptsDirectoryFromUser;
 				simulinkEcoreLocation = simulinkEcoreLocationFromUser;
-				portNumber = prop.getProperty("portNumber");
-				svnUserName = prop.getProperty("svnUserName");
-				svnPassword = prop.getProperty("svnPassword");
+				portNumber = configuredProperty(prop, "portNumber", portNumber);
+				svnUserName = configuredProperty(prop, "svnUserName", svnUserName);
+				svnPassword = configuredProperty(prop, "svnPassword", svnPassword);
 				try {
 					if (Boolean.parseBoolean(syncWithSvnRepoFromUser)) {
 						syncWithSvnRepo = true;
 					}
 				} catch (Exception e) {
-
+					LOG.trace(
+							"Could not parse syncWithSvnRepo configuration", e);
 				}
 				try {
 					if (Boolean.parseBoolean(useIndividualSubversionFilesFromUser)) {
@@ -236,29 +268,67 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 						   });
 					}
 				} catch (Exception e) {
-
+					LOG.trace(
+							"Could not prepare the configured individual SVN files directory", e);
 				}
-				svnurl = prop.getProperty("svnurl");
+				svnurl = configuredProperty(prop, "svnurl", svnurl);
 				try {
 					delayInSecondsBetweenDataRefresh = Integer.parseInt(delayInSecondsBetweenDataRefreshFromUser);
 				} catch (Exception e) {
-
+					LOG.trace(
+							"Invalid delayInSecondsBetweenDataRefresh configuration", e);
 				}
 
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 			} finally {
 
 				try {
 					input.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					LOG.error("Unhandled exception", e);
 				}
 
 			}
 		}
 
+	}
+
+	private static String configuredProperty(final Properties properties, final String key,
+			final String defaultValue) {
+		String value = System.getProperty(key);
+		if (value == null || value.trim().isEmpty()) {
+			value = properties.getProperty(key);
+		}
+		if (value == null || value.trim().isEmpty()) {
+			value = System.getenv(key);
+		}
+		if (value == null || value.trim().isEmpty()) {
+			value = System.getenv(key.toUpperCase().replace('.', '_'));
+		}
+		if (value == null || value.trim().isEmpty()) {
+			try {
+				final InitialContext context = new InitialContext();
+				for (final String name : new String[] { "java:comp/env/" + key, key }) {
+					try {
+						final Object lookup = context.lookup(name);
+						if (lookup != null && !lookup.toString().trim().isEmpty()) {
+							value = lookup.toString();
+							break;
+						}
+					} catch (NamingException ignored) {
+						// Try the next standard name.
+						LOG.trace(
+								"JNDI lookup failed for " + name, ignored);
+					}
+				}
+			} catch (NamingException ignored) {
+				// JNDI is optional in standalone deployments.
+				LOG.trace(
+						"JNDI is unavailable while resolving " + key, ignored);
+			}
+		}
+		return value == null || value.trim().isEmpty() ? defaultValue : value.trim();
 	}
 
 	private static void loadSVNURLsFile() {
@@ -275,8 +345,7 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 				input = new FileInputStream(localSVNURLsFilePath);
 				svnURLsFilePath = localSVNURLsFilePath;
 			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				LOG.error("Unhandled exception", e1);
 			} // for war file
 		}
 
@@ -289,14 +358,13 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 				List<String[]> allElements = reader2.readAll();								
 				subversionFileURLs = readSVNFileURLs(allElements);									
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 			} finally {
 
 				try {
 					input.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					LOG.error("Unhandled exception", e);
 				}
 
 			}
@@ -335,7 +403,7 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 					
 				
 			} catch (Exception e) {
-
+				LOG.trace("Ignoring an invalid or duplicate Subversion URL from the configured URL list", e);
 			}
 		}
 		return subversionFileURLs;
@@ -349,20 +417,23 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 	public static void checkoutOrUpdateSVNWorkingCopy() {
 		Thread thread = new Thread() {
 			public void start() {
-				ArrayList<FileMetadata> fileMetaDatas = SubversionClient.syncWorkingCopy(svnurl,
-						simulinkModelsDirectory, svnUserName, svnPassword);
-				// convert fileMetaDatas into OSLC POJOs
-				subversionManager.convertFileMetaDataIntoRDFSubversionFileResources(fileMetaDatas);
+				try {
+					ArrayList<FileMetadata> fileMetaDatas = new ArrayList<>(subversionService.syncWorkingCopy(svnurl,
+							simulinkModelsDirectory, svnUserName, svnPassword));
+					// convert fileMetaDatas into OSLC POJOs
+					subversionManager.convertFileMetaDataIntoRDFSubversionFileResources(fileMetaDatas);
+				} catch (Exception exception) {
+					LOG.error("Unhandled exception", exception);
+				}
 			}
 		};
 		thread.start();
 		try {
 			thread.join();
-			System.out.println(
+			LOG.info(
 					"Connection with Subversion repository and creation of OSLC Subversion file resources finished.");
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 		}
 	}
 
@@ -395,11 +466,14 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 					}
 					
 					// perform checkout or update on Subversion file
-					if(subversionFileClient == null){
-						subversionFileClient = new SubversionFileClient();
+					FileMetadata specificFileMetaData;
+					try {
+						specificFileMetaData = subversionService.syncFile(subversionFileURLString,
+								simulinkModelsDirectory + localSubversionFileDir, svnUserName, svnPassword);
+					} catch (Exception exception) {
+						LOG.error("Unhandled exception", exception);
+						continue;
 					}
-					FileMetadata specificFileMetaData = subversionFileClient.syncFile(subversionFileURLString,
-							simulinkModelsDirectory + localSubversionFileDir, svnUserName, svnPassword);
 					
 					// save Subversion file metadata
 					if(specificFileMetaData != null){
@@ -415,11 +489,10 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 		thread.start();
 		try {
 			thread.join();
-			System.out.println(
+			LOG.info(
 					"Connection with Subversion repository and creation of OSLC Subversion file resources finished.");
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 		}
 
 	}
@@ -427,17 +500,16 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 	public static void readDataFirstTime() {
 		Thread thread = new Thread() {
 			public void start() {
-				subversionManager = new SubversionManager(SimulinkManager.baseHTTPURI);
+				subversionManager = new SubversionManager(SimulinkManager.baseHTTPURI, subversionService);
 				reloadSimulinkModels();
 			}
 		};
 		thread.start();
 		try {
 			thread.join();
-			System.out.println("Simulink files read. Initialization of OSLC Simulink adapter finished.");
+			LOG.info("Simulink files read. Initialization of OSLC Simulink adapter finished.");
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 		}
 	}
 

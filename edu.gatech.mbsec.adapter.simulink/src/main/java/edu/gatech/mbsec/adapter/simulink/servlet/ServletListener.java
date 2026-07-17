@@ -20,11 +20,14 @@ import jakarta.servlet.ServletContextListener;
 
 import jakarta.ws.rs.core.UriBuilder;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.eclipse.lyo.oslc4j.core.OSLC4JUtils;
 
 import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Configures the public base URI for the OSLC resources produced by this
@@ -35,7 +38,7 @@ import java.util.logging.Logger;
  */
 public class ServletListener implements ServletContextListener {
 
-    private static final Logger LOG = Logger.getLogger(ServletListener.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(ServletListener.class);
 
     private static final String BASE_URL_KEY = "baseurl";
     private static final String FALLBACK_BASE = "http://localhost:8080";
@@ -57,10 +60,18 @@ public class ServletListener implements ServletContextListener {
         final String backend =
                 getConfigurationProperty("simulink.backend", "xmi", servletContext);
         System.setProperty("simulink.backend", backend);
-        LOG.info("Using SimulationModelBackend implementation: "
-                + ("xmi".equalsIgnoreCase(backend)
+        LOG.info("Using SimulationModelBackend implementation: {}",
+                ("xmi".equalsIgnoreCase(backend)
                         ? "SimulationModelBackendStandaloneImpl (XMI fixture from classpath, no MATLAB required)"
                         : "MatlabImpl (requires MATLAB)"));
+
+        final String svnImplementation =
+                getConfigurationProperty("subversion.client.impl", "standalone", servletContext);
+        System.setProperty("subversion.client.impl", svnImplementation);
+        LOG.info("Using Subversion implementation: {}",
+                ("standalone".equalsIgnoreCase(svnImplementation)
+                        ? "SubversionServiceStandaloneImpl"
+                        : "SubversionServiceSvnkitImpl (requires -Pfull)"));
 
         final String basePathProperty =
                 getConfigurationProperty(BASE_URL_KEY, FALLBACK_BASE, servletContext);
@@ -68,14 +79,14 @@ public class ServletListener implements ServletContextListener {
         final String baseUrl = builder.path(servletContext.getContextPath()).build().toString();
 
         try {
-            LOG.info("Setting public URI: " + baseUrl);
+            LOG.info("Setting public URI: {}", baseUrl);
             OSLC4JUtils.setPublicURI(baseUrl);
-            LOG.info("Setting servlet path: " + SERVLET_URL_PATTERN);
+            LOG.info("Setting servlet path: {}", SERVLET_URL_PATTERN);
             OSLC4JUtils.setServletPath(SERVLET_URL_PATTERN);
         } catch (final MalformedURLException e) {
-            LOG.log(Level.SEVERE, "ServletListener encountered MalformedURLException.", e);
+            LOG.error("ServletListener encountered MalformedURLException.", e);
         } catch (final IllegalArgumentException e) {
-            LOG.log(Level.SEVERE, "ServletListener encountered IllegalArgumentException.", e);
+            LOG.error("ServletListener encountered IllegalArgumentException.", e);
         }
 
         LOG.info("ServletListener contextInitialized.");
@@ -91,7 +102,8 @@ public class ServletListener implements ServletContextListener {
      * <ol>
      *   <li>System property</li>
      *   <li>Servlet context init parameter</li>
-     *   <li>Environment variable</li>
+     *   <li>Environment variable (exact key, then an uppercase underscore form)</li>
+     *   <li>JNDI ({@code java:comp/env/&lt;key&gt;}, then {@code &lt;key&gt;})</li>
      *   <li>Provided default value</li>
      * </ol>
      */
@@ -110,6 +122,29 @@ public class ServletListener implements ServletContextListener {
         value = System.getenv(propertyKey);
         if (value != null && !value.trim().isEmpty()) {
             return value;
+        }
+
+        value = System.getenv(propertyKey.toUpperCase().replace('.', '_'));
+        if (value != null && !value.trim().isEmpty()) {
+            return value;
+        }
+
+        try {
+            final InitialContext context = new InitialContext();
+            for (final String name : new String[] { "java:comp/env/" + propertyKey, propertyKey }) {
+                try {
+                    final Object jndiValue = context.lookup(name);
+                    if (jndiValue != null && !jndiValue.toString().trim().isEmpty()) {
+                        return jndiValue.toString();
+                    }
+                } catch (NamingException ignored) {
+                    // Try the next standard JNDI name before using the default.
+                    LOG.trace("JNDI lookup failed for {}", name, ignored);
+                }
+            }
+        } catch (NamingException ignored) {
+            // JNDI is optional in standalone Jetty and Docker deployments.
+            LOG.trace("JNDI is unavailable while resolving {}", propertyKey, ignored);
         }
 
         return defaultValue;

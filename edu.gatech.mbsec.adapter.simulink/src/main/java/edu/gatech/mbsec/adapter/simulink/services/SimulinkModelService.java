@@ -17,6 +17,9 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -64,6 +67,8 @@ import edu.gatech.mbsec.adapter.simulink.serviceproviders.ServiceProviderCatalog
 @OslcService(Constants.SIMULINK_MODEL_DOMAIN)
 @Path("{modelName}/model")
 public class SimulinkModelService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SimulinkModelService.class);
 	
 	@Context
 	private HttpServletRequest httpServletRequest;
@@ -115,7 +120,7 @@ public class SimulinkModelService {
     		try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {				
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			} 
     	}
@@ -138,7 +143,7 @@ public class SimulinkModelService {
 			finalModelName = modelName;
 		}
 		
-		SimulinkManager.createSimulinkElements(newElements, finalModelName);		
+		SimulinkManager.getBackend().createElements(newElements, finalModelName);
 		URI about = newElements.getAbout();
 		return Response.created(about).entity(newElements).build();
 	}

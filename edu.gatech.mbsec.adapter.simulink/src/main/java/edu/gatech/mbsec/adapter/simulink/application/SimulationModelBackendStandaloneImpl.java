@@ -6,6 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
 import simulink.WorkingDirectory;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkBlock;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkElementsToCreate;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkLine;
+import edu.gatech.mbsec.adapter.simulink.resources.SimulinkParameter;
 
 /**
  * Standalone implementation of {@link SimulationModelBackend}: loads a
@@ -38,12 +42,34 @@ public class SimulationModelBackendStandaloneImpl implements SimulationModelBack
 		final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(location);
 		final File xmi;
 		if (in != null) {
-			xmi = File.createTempFile("simulinkWorkDir", ".xmi");
-			xmi.deleteOnExit();
-			Files.copy(in, xmi.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			try (InputStream fixture = in) {
+				xmi = File.createTempFile("simulinkWorkDir", ".xmi");
+				xmi.deleteOnExit();
+				Files.copy(fixture, xmi.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}
 		} else {
 			xmi = new File(location);
 		}
 		return SimulinkManager.loadWorkingDirectoryFromXmi(xmi);
+	}
+
+	@Override
+	public void createBlock(final SimulinkBlock block, final String modelName) {
+		// Standalone mode intentionally keeps the fixture independent of MATLAB.
+	}
+
+	@Override
+	public void createParameter(final SimulinkParameter parameter, final String modelName) {
+		// Standalone mode intentionally keeps the fixture independent of MATLAB.
+	}
+
+	@Override
+	public void createLine(final SimulinkLine line, final String modelName) {
+		// Standalone mode intentionally keeps the fixture independent of MATLAB.
+	}
+
+	@Override
+	public void createElements(final SimulinkElementsToCreate elements, final String modelName) {
+		// Standalone mode intentionally keeps the fixture independent of MATLAB.
 	}
 }

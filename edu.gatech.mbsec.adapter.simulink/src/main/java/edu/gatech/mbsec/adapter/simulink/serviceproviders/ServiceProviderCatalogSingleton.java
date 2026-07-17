@@ -22,6 +22,9 @@
  *******************************************************************************/
 package edu.gatech.mbsec.adapter.simulink.serviceproviders;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URI;
@@ -71,6 +74,8 @@ import simulink.Model;
  * provider collection request.
  */
 public class ServiceProviderCatalogSingleton {
+
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceProviderCatalogSingleton.class);
 	private static final ServiceProviderCatalog serviceProviderCatalog;
 	public static final SortedMap<String, ServiceProvider> serviceProviders = new TreeMap<String, ServiceProvider>();
 	// public static final Map<String, ServiceProvider> serviceProviders = new
@@ -80,7 +85,11 @@ public class ServiceProviderCatalogSingleton {
 		try {
 			serviceProviderCatalog = new ServiceProviderCatalog();
 
-			serviceProviderCatalog.setAbout(new URI(OSLC4JUtils.getPublicURI()));
+			String servletURI = OSLC4JUtils.getServletURI();
+			if (servletURI.endsWith("/")) {
+				servletURI = servletURI.substring(0, servletURI.length() - 1);
+			}
+			serviceProviderCatalog.setAbout(new URI(servletURI + "/catalog/singleton"));
 			serviceProviderCatalog.setTitle("OSLC Service Provider Catalog");
 			serviceProviderCatalog.setDescription("OSLC Service Provider Catalog");
 			serviceProviderCatalog
@@ -251,8 +260,7 @@ public class ServiceProviderCatalogSingleton {
 									simulinkModel.getName(), parameterMap);
 							registerServiceProvider(basePath, simulinkServiceProvider, simulinkModel.getName());
 						} catch (OslcCoreApplicationException | URISyntaxException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							LOG.error("Unhandled exception", e);
 						}
 
 					}
@@ -268,11 +276,9 @@ public class ServiceProviderCatalogSingleton {
 							"Subversion Files");
 					registerServiceProvider(basePath, subversionFileServiceProvider, "subversionfiles");
 				} catch (OslcCoreApplicationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					LOG.error("Unhandled exception", e);
 				} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					LOG.error("Unhandled exception", e);
 				}
 
 			}
@@ -293,7 +299,7 @@ public class ServiceProviderCatalogSingleton {
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Unhandled exception", e);
 			throw new WebApplicationException(e, Status.INTERNAL_SERVER_ERROR);
 		}
 	}

@@ -11,8 +11,9 @@ import util.FileMetadata;
  * {@link SvnSampleData}), so the Simulink adapter runs standalone without a
  * Subversion server.</p>
  */
+@Deprecated
 public class SubversionFileClient {
 	public FileMetadata syncFile(String svnurl, String localDir, String user, String password) {
-		return SvnSampleData.loadFile();
+		return new SubversionServiceStandaloneImpl().syncFile(svnurl, localDir, user, password);
 	}
 }

@@ -17,6 +17,9 @@
  *******************************************************************************************/
 package edu.gatech.mbsec.adapter.subversion;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -68,6 +71,8 @@ import org.eclipse.lyo.oslc4j.core.model.OslcMediaType;
 @OslcService(SubversionConstants.SUBVERSION_FILE_DOMAIN)
 @Path("subversionfiles/")
 public class SubversionFileService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SubversionFileService.class);
 	
 	@Context
 	private HttpServletRequest httpServletRequest;
@@ -135,7 +140,7 @@ public class SubversionFileService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
@@ -155,7 +160,7 @@ public class SubversionFileService {
 			try {
 				rd.forward(httpServletRequest, httpServletResponse);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error("Unhandled exception", e);
 				throw new WebApplicationException(e);
 			}
 		}
