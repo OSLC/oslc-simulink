@@ -124,6 +124,13 @@ public class SimulinkAdapterIT {
 				"cruiseControl RDF should reference exactly 3 blocks");
 	}
 
+	@Test
+	void subversionServiceProviderExposesFileQueryCapability() {
+		final Model sp = getRdf("/services/serviceProviders/subversionfiles");
+		assertTrue(sp.listStatements(null, QUERY_CAPABILITY, (RDFNode) null).hasNext(),
+				"Subversion service provider should expose the file query capability");
+	}
+
 	// ------------------------------------------------------------------------
 	// Step 4: drill into a contained block and verify it matches the XMI
 	// ------------------------------------------------------------------------
