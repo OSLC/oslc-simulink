@@ -30,8 +30,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -116,14 +115,9 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 	public static String svnUserName;
 	public static String svnPassword;
 
-	// public static String configFilePath =
-	// "oslc4jsimulink configuration/config.properties";
-	// public static String configFilePath = "configuration/config.properties";
-	// public static String configFilePath =
-	// "C:/Users/Axel/Desktop/apache-tomcat-7.0.59/configuration/config.properties";
-	public static String warConfigFilePath = "../oslc4jsimulink configuration/config.properties";
-	public static String localConfigFilePath = "oslc4jsimulink configuration/config.properties";
-	public static String configFilePath = null;
+	private static final String CONFIG_FILE_PROPERTY = "simulink.configFile";
+	private static final String DEFAULT_CONFIG_RESOURCE = "/config.properties";
+	public static String configFilePath = DEFAULT_CONFIG_RESOURCE;
 	public static String warSVNURLsFilePath = "../oslc4jsimulink configuration/subversionfiles.csv";
 	public static String localSVNURLsFilePath = "oslc4jsimulink configuration/subversionfiles.csv";
 	public static String svnURLsFilePath = null;
@@ -175,58 +169,16 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 
 	private static void loadPropertiesFile() {
 		Properties prop = new Properties();
-		InputStream input = null;
+		try (InputStream input = openConfigurationFile()) {
+			String configText = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+			prop.load(new StringReader(configText.replace("\\", "/")));
 
-		// These defaults keep the standalone WAR independent of a workstation
-		// configuration file. External configuration overrides them below.
-		simulinkEcoreLocation = configuredProperty(prop, "simulinkEcoreLocation", "");
-		simulinkModelsDirectory = configuredProperty(prop, "simulinkModelsDirectory", "simulinkmodels/");
-		matlabScriptsDirectory = configuredProperty(prop, "matlabScriptsDirectory", "matlab/");
-		portNumber = configuredProperty(prop, "portNumber", "8080");
-		svnUserName = configuredProperty(prop, "svnUserName", "");
-		svnPassword = configuredProperty(prop, "svnPassword", "");
-		svnurl = configuredProperty(prop, "svnurl", "");
-		syncWithSvnRepo = Boolean.parseBoolean(configuredProperty(prop, "syncWithSvnRepo", "false"));
-		useIndividualSubversionFiles = Boolean.parseBoolean(
-				configuredProperty(prop, "useIndividualSubversionFiles", "false"));
-		try {
-			delayInSecondsBetweenDataRefresh = Integer.parseInt(
-					configuredProperty(prop, "delayInSecondsBetweenDataRefresh", "100000"));
-		} catch (NumberFormatException ignored) {
-			// Keep the safe default for legacy values such as "none".
-			LOG.trace(
-				"Invalid delayInSecondsBetweenDataRefresh value; using the safe default", ignored);
-		}
-
-		try {
-			// loading properties file
-			// input = new FileInputStream("./configuration/config.properties");
-			input = new FileInputStream(warConfigFilePath); // for war file
-			configFilePath = warConfigFilePath;
-		} catch (FileNotFoundException e) {
-			try {
-				input = new FileInputStream(localConfigFilePath);
-				configFilePath = localConfigFilePath;
-			} catch (FileNotFoundException e1) {
-				LOG.error("Unhandled exception", e1);
-			} // for war file
-		}
-
-		// load property file content and convert backslashes into forward
-		// slashes
-		String str;
-		if (input != null) {
-			try {
-				str = readFile(configFilePath, Charset.defaultCharset());
-				prop.load(new StringReader(str.replace("\\", "/")));
-
-				// get the property value
-				String simulinkEcoreLocationFromUser = configuredProperty(prop, "simulinkEcoreLocation", simulinkEcoreLocation);
-				String simulinkModelsDirectoryFromUser = configuredProperty(prop, "simulinkModelsDirectory", simulinkModelsDirectory);
-				String matlabScriptsDirectoryFromUser = configuredProperty(prop, "matlabScriptsDirectory", matlabScriptsDirectory);
-				String syncWithSvnRepoFromUser = configuredProperty(prop, "syncWithSvnRepo", Boolean.toString(syncWithSvnRepo));
-				String delayInSecondsBetweenDataRefreshFromUser = configuredProperty(prop, "delayInSecondsBetweenDataRefresh", Integer.toString(delayInSecondsBetweenDataRefresh));
-				String useIndividualSubversionFilesFromUser = configuredProperty(prop, "useIndividualSubversionFiles", Boolean.toString(useIndividualSubversionFiles));
+				String simulinkEcoreLocationFromUser = configuredProperty(prop, "simulinkEcoreLocation", "");
+				String simulinkModelsDirectoryFromUser = configuredProperty(prop, "simulinkModelsDirectory", "simulinkmodels/");
+				String matlabScriptsDirectoryFromUser = configuredProperty(prop, "matlabScriptsDirectory", "matlab/");
+				String syncWithSvnRepoFromUser = configuredProperty(prop, "syncWithSvnRepo", "false");
+				String delayInSecondsBetweenDataRefreshFromUser = configuredProperty(prop, "delayInSecondsBetweenDataRefresh", "100000");
+				String useIndividualSubversionFilesFromUser = configuredProperty(prop, "useIndividualSubversionFiles", "false");
 
 				// add trailing slash if missing
 				if (!simulinkModelsDirectoryFromUser.endsWith("/")) {
@@ -235,9 +187,9 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 				simulinkModelsDirectory = simulinkModelsDirectoryFromUser;
 				matlabScriptsDirectory = matlabScriptsDirectoryFromUser;
 				simulinkEcoreLocation = simulinkEcoreLocationFromUser;
-				portNumber = configuredProperty(prop, "portNumber", portNumber);
-				svnUserName = configuredProperty(prop, "svnUserName", svnUserName);
-				svnPassword = configuredProperty(prop, "svnPassword", svnPassword);
+				portNumber = configuredProperty(prop, "portNumber", "8080");
+				svnUserName = configuredProperty(prop, "svnUserName", "");
+				svnPassword = configuredProperty(prop, "svnPassword", "");
 				try {
 					if (Boolean.parseBoolean(syncWithSvnRepoFromUser)) {
 						syncWithSvnRepo = true;
@@ -279,32 +231,44 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 							"Invalid delayInSecondsBetweenDataRefresh configuration", e);
 				}
 
-			} catch (IOException e) {
-				LOG.error("Unhandled exception", e);
-			} finally {
-
-				try {
-					input.close();
-				} catch (IOException e) {
-					LOG.error("Unhandled exception", e);
-				}
-
-			}
+		} catch (IOException e) {
+			throw new IllegalStateException("Could not load the Simulink adapter configuration", e);
 		}
 
 	}
 
+	private static InputStream openConfigurationFile() throws IOException {
+		final String externalConfigPath = configuredProperty(new Properties(), CONFIG_FILE_PROPERTY, "");
+		if (!externalConfigPath.isEmpty()) {
+			configFilePath = externalConfigPath;
+			LOG.info("Using external Simulink configuration from {}", configFilePath);
+			return new FileInputStream(configFilePath);
+		}
+
+		final InputStream packagedConfig = OSLC4JSimulinkApplication.class
+				.getResourceAsStream(DEFAULT_CONFIG_RESOURCE);
+		if (packagedConfig == null) {
+			throw new FileNotFoundException("Packaged configuration resource is missing: " + DEFAULT_CONFIG_RESOURCE);
+		}
+		configFilePath = "classpath:" + DEFAULT_CONFIG_RESOURCE;
+		LOG.info("Using packaged standalone Simulink configuration from {}", configFilePath);
+		return packagedConfig;
+	}
+
 	private static String configuredProperty(final Properties properties, final String key,
 			final String defaultValue) {
-		String value = System.getProperty(key);
-		if (value == null || value.trim().isEmpty()) {
-			value = properties.getProperty(key);
-		}
-		if (value == null || value.trim().isEmpty()) {
-			value = System.getenv(key);
-		}
+		String value = System.getenv(key);
 		if (value == null || value.trim().isEmpty()) {
 			value = System.getenv(key.toUpperCase().replace('.', '_'));
+		}
+		if (value == null || value.trim().isEmpty()) {
+			value = System.getenv(toDockerEnvironmentKey(key));
+		}
+		if (value == null || value.trim().isEmpty()) {
+			value = System.getProperty(key);
+		}
+		if (value == null || value.trim().isEmpty()) {
+			value = properties.getProperty(key);
 		}
 		if (value == null || value.trim().isEmpty()) {
 			try {
@@ -318,17 +282,23 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 						}
 					} catch (NamingException ignored) {
 						// Try the next standard name.
-						LOG.trace(
-								"JNDI lookup failed for " + name, ignored);
+						LOG.trace("JNDI lookup failed for {}", name, ignored);
 					}
 				}
 			} catch (NamingException ignored) {
 				// JNDI is optional in standalone deployments.
-				LOG.trace(
-						"JNDI is unavailable while resolving " + key, ignored);
+				LOG.trace("JNDI is unavailable while resolving {}", key, ignored);
 			}
 		}
 		return value == null || value.trim().isEmpty() ? defaultValue : value.trim();
+	}
+
+	private static String toDockerEnvironmentKey(final String key) {
+		if ("svnurl".equals(key)) {
+			return "SVN_URL";
+		}
+		return key.replaceAll("([a-z0-9])([A-Z])", "$1_$2")
+				.replace('.', '_').toUpperCase();
 	}
 
 	private static void loadSVNURLsFile() {
@@ -407,11 +377,6 @@ public class OSLC4JSimulinkApplication extends jakarta.ws.rs.core.Application {
 			}
 		}
 		return subversionFileURLs;
-	}
-
-	static String readFile(String path, Charset encoding) throws IOException {
-		byte[] encoded = Files.readAllBytes(Paths.get(path));
-		return encoding.decode(ByteBuffer.wrap(encoded)).toString();
 	}
 
 	public static void checkoutOrUpdateSVNWorkingCopy() {

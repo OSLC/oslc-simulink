@@ -55,7 +55,7 @@ public class ServletListener implements ServletContextListener {
         // Select the Simulink backend (xmi | matlab) before any OSLC resource
         // references SimulinkManager, whose static initializer reads this
         // system property. Resolved via the standard precedence
-        // (system property -> context param -> env -> default). The standalone
+        // (environment -> system property -> context param -> JNDI -> default). The standalone
         // XMI backend is the default so the server runs without MATLAB.
         final String backend =
                 getConfigurationProperty("simulink.backend", "xmi", servletContext);
@@ -100,31 +100,36 @@ public class ServletListener implements ServletContextListener {
     /**
      * Resolves a configuration property using the following precedence:
      * <ol>
+     *   <li>Environment variable (exact key, legacy uppercase form, then Docker-style uppercase snake case)</li>
      *   <li>System property</li>
      *   <li>Servlet context init parameter</li>
-     *   <li>Environment variable (exact key, then an uppercase underscore form)</li>
      *   <li>JNDI ({@code java:comp/env/&lt;key&gt;}, then {@code &lt;key&gt;})</li>
      *   <li>Provided default value</li>
      * </ol>
      */
     private static String getConfigurationProperty(final String propertyKey,
             final String defaultValue, final ServletContext servletContext) {
-        String value = System.getProperty(propertyKey);
-        if (value != null && !value.trim().isEmpty()) {
-            return value;
-        }
-
-        value = servletContext.getInitParameter(propertyKey);
-        if (value != null && !value.trim().isEmpty()) {
-            return value;
-        }
-
-        value = System.getenv(propertyKey);
+        String value = System.getenv(propertyKey);
         if (value != null && !value.trim().isEmpty()) {
             return value;
         }
 
         value = System.getenv(propertyKey.toUpperCase().replace('.', '_'));
+        if (value != null && !value.trim().isEmpty()) {
+            return value;
+        }
+
+        value = System.getenv(toDockerEnvironmentKey(propertyKey));
+        if (value != null && !value.trim().isEmpty()) {
+            return value;
+        }
+
+        value = System.getProperty(propertyKey);
+        if (value != null && !value.trim().isEmpty()) {
+            return value;
+        }
+
+        value = servletContext.getInitParameter(propertyKey);
         if (value != null && !value.trim().isEmpty()) {
             return value;
         }
@@ -148,5 +153,13 @@ public class ServletListener implements ServletContextListener {
         }
 
         return defaultValue;
+    }
+
+    private static String toDockerEnvironmentKey(final String propertyKey) {
+        if ("svnurl".equals(propertyKey)) {
+            return "SVN_URL";
+        }
+        return propertyKey.replaceAll("([a-z0-9])([A-Z])", "$1_$2")
+                .replace('.', '_').toUpperCase();
     }
 }
