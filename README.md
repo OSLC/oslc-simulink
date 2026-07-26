@@ -3,7 +3,7 @@
 ## Getting started
 
 ```sh
-mvn -f edu.gatech.mbsec.adapter.simulink.resources/pom.xml clean install -DskipTests
+mvn clean install -DskipTests
 mvn -f edu.gatech.mbsec.adapter.simulink/pom.xml clean jetty:run-war
 ```
 
@@ -14,8 +14,8 @@ mvn -f edu.gatech.mbsec.adapter.simulink/pom.xml clean jetty:run-war
 The default build is standalone and does not require MATLAB or SVNKit. It loads the packaged XMI fixture and sample SVN data, so the server can be run and integration-tested on any supported development platform.
 
 ```text
-mvn -f edu.gatech.mbsec.adapter.simulink.resources/pom.xml clean install -DskipTests
-mvn -f edu.gatech.mbsec.adapter.simulink/pom.xml -Pacceptance clean verify
+mvn clean test
+mvn -Pacceptance clean verify
 ```
 
 The optional `full` profile packages the MATLAB scripts and SVNKit-backed implementation. Build and install the SVN module with that profile first, then package the server:
